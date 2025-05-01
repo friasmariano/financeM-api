@@ -14,14 +14,14 @@ public class Budget {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "categoryId")
+    @JoinColumn(name = "category_id")
     private BudgetCategory category;
 
     @NotNull
     private BigDecimal limitAmount;
 
     @OneToOne
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "user_id")
     private User user;
 
     public Budget() {}

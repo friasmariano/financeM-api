@@ -25,7 +25,7 @@ public class Pot {
     private BigDecimal currentAmount;
 
     @OneToOne
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "user_id")
     private User user;
 
     public Pot() {

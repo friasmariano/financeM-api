@@ -7,7 +7,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
-@Table(name = "budgetCategories")
+@Table(name = "budget_categories")
 public class BudgetCategory {
 
     @Id

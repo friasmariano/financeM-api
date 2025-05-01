@@ -3,7 +3,7 @@ package com.finance.manager.models;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name ="userRoles")
+@Table(name ="user_roles")
 public class UserRole {
 
     @Id
@@ -11,11 +11,11 @@ public class UserRole {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "roleId")
+    @JoinColumn(name = "role_id")
     private Role role;
 
     public UserRole() {}

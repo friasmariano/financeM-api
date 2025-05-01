@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 @Entity
-@Table(name = "roleTypes")
+@Table(name = "role_types")
 public class RoleType {
 
     @Id

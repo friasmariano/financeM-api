@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "recurringBills")
+@Table(name = "recurring_bills")
 public class RecurringBill {
 
     @Id
@@ -29,7 +29,7 @@ public class RecurringBill {
     private Boolean paidThisMonth;
 
     @OneToOne
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "user_id")
     private User user;
 
     public RecurringBill() {

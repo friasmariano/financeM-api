@@ -17,7 +17,7 @@ public class User {
     private String roles;
 
     @OneToOne
-    @JoinColumn(name = "personId")
+    @JoinColumn(name = "person_Id")
     private Person person;
 
     @Version

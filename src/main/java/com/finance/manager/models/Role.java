@@ -17,7 +17,7 @@ public class Role {
     private String name;
 
     @ManyToOne
-    @JoinColumn(name = "roleTypeId")
+    @JoinColumn(name = "role_Type_id")
     private RoleType roleType;
 
     @OneToMany(mappedBy = "role")

@@ -24,15 +24,15 @@ public class Transaction {
     private Instant date;
 
     @OneToOne
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "user_id")
     public User user;
 
     @OneToOne
-    @JoinColumn(name = "budgetId")
+    @JoinColumn(name = "budget_id")
     public Budget budget;
 
     @OneToOne
-    @JoinColumn(name = "potId")
+    @JoinColumn(name = "pot_id")
     public Pot pot;
 
     public Transaction() {}
