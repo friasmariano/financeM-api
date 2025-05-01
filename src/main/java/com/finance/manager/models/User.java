@@ -3,6 +3,8 @@ package com.finance.manager.models;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 public class User {
@@ -20,6 +22,10 @@ public class User {
 
     @Version
     private Integer version;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<UserRole> userRoles;
+
 
     public User() {}
 
