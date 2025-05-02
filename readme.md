@@ -1,7 +1,16 @@
 ## FinanceM
 
-## Description
-FinanceM is a personal finance management application built with Spring Boot and Gradle. It leverages Java and SQL to provide a robust backend for managing and processing financial data. The app is designed to help users track their finances effectively, offering a user-friendly interface and powerful backend features.
+## Description## Features
+- **Flyway Database Migrations**: Manages versioned database schema migrations, ensuring consistency and easy updates across environments.
+
+## Prerequisites
+- Java 17 or higher
+- Gradle 7.x or higher
+- A compatible SQL database (e.g., MySQL, PostgreSQL)
+- Flyway (configured in the project for database migrations)
+
+## Getting Started
+
 
 ## Features
 - **Spring Boot Framework**: Simplifies application development with built-in configurations and features.
@@ -26,6 +35,10 @@ FinanceM is a personal finance management application built with Spring Boot and
 - **Bonus Features**:
   - **Full-Stack Ready**: Save details to a database for persistent storage.
   - **User Authentication**: Allows users to create accounts and log in securely.
+
+### Database Migrations with Flyway
+Flyway is used to manage database schema migrations. To apply migrations, ensure your database is configured in the `application.properties` or `application.yml` file, then run the application. Flyway will automatically apply any pending migrations located in the `db/migration` directory.
+FinanceM is a personal finance management application built with Spring Boot and Gradle. It leverages Java and SQL to provide a robust backend for managing and processing financial data. The app is designed to help users track their finances effectively, offering a user-friendly interface and powerful backend features.
 
 ## Prerequisites
 - Java 17 or higher
