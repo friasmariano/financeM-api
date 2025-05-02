@@ -14,7 +14,6 @@ public class User {
 
     private String username;
     private String password;
-    private String roles;
 
     @OneToOne
     @JoinColumn(name = "person_Id")
@@ -23,17 +22,23 @@ public class User {
     @Version
     private Integer version;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<UserRole> userRoles;
 
 
     public User() {}
 
-    public User(Long id, String username, String password, String roles, Integer version) {
+    public User(Long id, String username, String password, Integer version) {
         this.id = id;
         this.username = username;
         this.password = password;
-        this.roles = roles;
+        this.version = version;
+    }
+
+    public User(String username, String password, Person person, Integer version) {
+        this.username = username;
+        this.password = password;
+        this.person = person;
         this.version = version;
     }
 
@@ -61,22 +66,10 @@ public class User {
         this.password = password;
     }
 
-    public String getRoles() {
-        return roles;
+    public List<UserRole> getUserRoles() {
+        return userRoles;
     }
 
-    public void setRoles(String roles) {
-        this.roles = roles;
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                ", roles='" + roles + '\'' +
-                '}';
-    }
+    public Person getPerson() { return person; }
 }
 

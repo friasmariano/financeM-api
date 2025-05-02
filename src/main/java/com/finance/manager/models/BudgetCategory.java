@@ -24,6 +24,10 @@ public class BudgetCategory {
         this.name = name;
     }
 
+    public BudgetCategory(String name) {
+        this.name = name;
+    }
+
     public Long getId() {
         return id;
     }

@@ -32,6 +32,11 @@ public class Role {
         this.userRoles = userRoles;
     }
 
+    public Role(String name, RoleType roleType) {
+        this.name = name;
+        this.roleType = roleType;
+    }
+
     public Long getId() {
         return id;
     }

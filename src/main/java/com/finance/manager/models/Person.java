@@ -27,6 +27,13 @@ public class Person {
         this.version = version;
     }
 
+    public Person(String name, String lastname, String email, Integer version) {
+        this.name = name;
+        this.lastname = lastname;
+        this.email = email;
+        this.version = version;
+    }
+
     public Long getId() {
         return id;
     }

@@ -27,6 +27,10 @@ public class RoleType {
         this.roles = roles;
     }
 
+    public RoleType(String type) {
+        this.type = type;
+    }
+
     public Long getId() {
         return id;
     }
