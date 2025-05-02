@@ -10,6 +10,7 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -24,6 +25,8 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
+import java.util.Arrays;
+
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
@@ -33,22 +36,40 @@ public class SecurityConfig {
     private final JpaUserDetailsService jpaUserDetailsService;
     private final RsaKeyProperties rsaKeys;
     private final JwtAuthenticationConverter jwtAuthConverter;
+    private final Environment env;
 
     public SecurityConfig(JpaUserDetailsService jpaUserDetailsService,
                           RsaKeyProperties rsaKeys,
-                          JwtAuthenticationConverter jwtAuthConverter) {
+                          JwtAuthenticationConverter jwtAuthConverter,
+                          Environment env) {
         this.jpaUserDetailsService = jpaUserDetailsService;
         this.rsaKeys = rsaKeys;
         this.jwtAuthConverter = jwtAuthConverter;
+        this.env = env;
     }
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        boolean isDev = Arrays.asList(env.getActiveProfiles()).contains("dev");
+
         return http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/**").permitAll()
-                        .anyRequest().authenticated()
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/api/**")
+                )
+                .authorizeHttpRequests(auth -> {
+                        // Public endpoints
+                        auth.requestMatchers("/api/auth/authenticate").permitAll();
+
+                        if (isDev) {
+                            auth.requestMatchers("/docs.html").permitAll();
+                            auth.requestMatchers("/swagger-ui.html").permitAll();
+                            auth.requestMatchers("/swagger-ui/**").permitAll();
+                            auth.requestMatchers("/v3/api-docs").permitAll();
+                            auth.requestMatchers("/actuator/**").permitAll();
+                        }
+
+                        auth.anyRequest().authenticated();
+                    }
                 )
                 .userDetailsService(jpaUserDetailsService)
                 .oauth2ResourceServer(oauth -> oauth
