@@ -40,15 +40,18 @@ public class SecurityConfig {
     private final RsaKeyProperties rsaKeys;
     private final JwtAuthenticationConverter jwtAuthConverter;
     private final Environment env;
+    private final NotFoundAccessDeniedHandler notFoundAccessDeniedHandler;
 
     public SecurityConfig(JpaUserDetailsService jpaUserDetailsService,
                           RsaKeyProperties rsaKeys,
                           JwtAuthenticationConverter jwtAuthConverter,
-                          Environment env) {
+                          Environment env,
+                          NotFoundAccessDeniedHandler notFoundAccessDeniedHandler) {
         this.jpaUserDetailsService = jpaUserDetailsService;
         this.rsaKeys = rsaKeys;
         this.jwtAuthConverter = jwtAuthConverter;
         this.env = env;
+        this.notFoundAccessDeniedHandler = notFoundAccessDeniedHandler;
     }
 
     @Bean
@@ -79,6 +82,8 @@ public class SecurityConfig {
                         auth.anyRequest().authenticated();
                     }
                 )
+                .exceptionHandling(ex -> ex
+                        .accessDeniedHandler(notFoundAccessDeniedHandler))
                 .userDetailsService(jpaUserDetailsService)
                 .oauth2ResourceServer(oauth -> oauth
                         .jwt(token -> token
