@@ -51,15 +51,11 @@ public class AuthController {
         // Set up the HTTP-only cookie
         Cookie cookie = new Cookie("jwt", token);
         cookie.setHttpOnly(true);
-        cookie.setSecure(true);
+        cookie.setSecure(false); // Only for development; set to true in production
         cookie.setPath("/");
         cookie.setMaxAge(3600);
-
-        String cookieHeader = String.format(
-                "jwt=%s; HttpOnly; Secure; Path=/; Max-Age=3600; SameSite=Strict",
-                token
-        );
-        response.addHeader("Set-Cookie", cookieHeader);
+        cookie.setAttribute("SameSite", "Lax");
+        response.addCookie(cookie);
 
         TokenResponse tokenResponse = new TokenResponse();
         tokenResponse.setAccessToken(token);
