@@ -1,9 +1,12 @@
 
 package com.finance.manager.controllers;
 
+import com.finance.manager.models.User;
 import com.finance.manager.models.requests.LoginRequest;
 import com.finance.manager.models.responses.TokenResponse;
+import com.finance.manager.models.responses.UserResponse;
 import com.finance.manager.services.TokenService;
+import com.finance.manager.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.Cookie;
@@ -11,10 +14,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -25,13 +31,15 @@ public class AuthController {
     public final TokenService tokenService;
     private final AuthenticationManager authenticationManager;
     private final HttpServletResponse response;
+    private final UserService userService;
 
     public AuthController(TokenService tokenService,
                           HttpServletResponse response,
-                          AuthenticationManager authenticationManager) {
+                          AuthenticationManager authenticationManager, UserService userService) {
         this.tokenService = tokenService;
         this.response = response;
         this.authenticationManager = authenticationManager;
+        this.userService = userService;
     }
 
     @PostMapping("/authenticate")
@@ -62,6 +70,13 @@ public class AuthController {
 
         return tokenResponse;
     }
+
+//    @PostMapping("/validateSession")
+//    @Operation(summary = "Authenticate user and return JWT token and user data")
+//    @ApiResponse(responseCode = "200", description = "Authentication successful")
+//    public ResponseEntity<UserResponse> validateSession(@RequestBody LoginRequest loginRequest) {
+//        Optional<User> userOpt = personService.findBy
+//    }
 
     @PostMapping("/logout")
     @Operation(summary = "Log out user by clearing JWT cookie")

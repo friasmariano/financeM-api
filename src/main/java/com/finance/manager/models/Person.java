@@ -12,6 +12,8 @@ public class Person {
 
     private String name;
     private String lastname;
+
+    @Column(unique = true, nullable = false)
     private String email;
 
     @Version
