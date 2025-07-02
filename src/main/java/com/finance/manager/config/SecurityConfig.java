@@ -87,7 +87,8 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> {
                         // Public endpoints
-                        auth.requestMatchers("/api/auth/authenticate", "/api/auth/logout").permitAll();
+                        auth.requestMatchers("/api/auth/authenticate", "/api/auth/logout",
+                                "/api/auth/validateSession").permitAll();
 
                         if (isDev) {
                             auth.requestMatchers("/docs.html").permitAll();

@@ -1,5 +1,6 @@
 package com.finance.manager.services;
 
+import com.finance.manager.models.Person;
 import com.finance.manager.models.User;
 import com.finance.manager.repositories.UserRepository;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,10 @@ public class UserService {
 
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
+    }
+
+    public Optional<User> findByPerson(Person person) {
+        return userRepository.findByPerson(person);
     }
 
     public Iterable<User> findAll() {

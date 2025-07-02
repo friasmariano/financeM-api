@@ -1,12 +1,18 @@
 
 package com.finance.manager.controllers;
 
+import com.finance.manager.models.Person;
 import com.finance.manager.models.User;
+import com.finance.manager.models.requests.AuthRequest;
 import com.finance.manager.models.requests.LoginRequest;
+import com.finance.manager.models.responses.ApiDefaultResponse;
 import com.finance.manager.models.responses.TokenResponse;
 import com.finance.manager.models.responses.UserResponse;
+import com.finance.manager.security.RateLimiterService;
+import com.finance.manager.services.PersonService;
 import com.finance.manager.services.TokenService;
 import com.finance.manager.services.UserService;
+import io.github.bucket4j.Bucket;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.Cookie;
@@ -18,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -30,16 +37,26 @@ public class AuthController {
 
     public final TokenService tokenService;
     private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
     private final HttpServletResponse response;
+    private final PersonService personService;
     private final UserService userService;
+    private final RateLimiterService rateLimiterService;
 
     public AuthController(TokenService tokenService,
                           HttpServletResponse response,
-                          AuthenticationManager authenticationManager, UserService userService) {
+                          AuthenticationManager authenticationManager,
+                          PasswordEncoder passwordEncoder,
+                          PersonService personService,
+                          UserService userService,
+                          RateLimiterService rateLimiterService) {
         this.tokenService = tokenService;
         this.response = response;
         this.authenticationManager = authenticationManager;
+        this.passwordEncoder = passwordEncoder;
+        this.personService = personService;
         this.userService = userService;
+        this.rateLimiterService = rateLimiterService;
     }
 
     @PostMapping("/authenticate")
@@ -71,12 +88,44 @@ public class AuthController {
         return tokenResponse;
     }
 
-//    @PostMapping("/validateSession")
-//    @Operation(summary = "Authenticate user and return JWT token and user data")
-//    @ApiResponse(responseCode = "200", description = "Authentication successful")
-//    public ResponseEntity<UserResponse> validateSession(@RequestBody LoginRequest loginRequest) {
-//        Optional<User> userOpt = personService.findBy
-//    }
+    @PostMapping("/validateSession")
+    @Operation(summary = "Authenticate user and return user data")
+    @ApiResponse(responseCode = "200", description = "Authentication successful")
+    public ResponseEntity<ApiDefaultResponse<UserResponse>> validateSession(@RequestBody AuthRequest authRequest) {
+
+//        Bucket bucket = rateLimiterService.resolveBucket(authRequest.getEmail());
+//
+//        if (!bucket.tryConsume(1)) {
+//            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+//                    .body(ApiDefaultResponse.error("Too many attempts. Please try again later"));
+//        }
+
+        Optional<Person> personOpt = personService.findByEmail(authRequest.getEmail());
+
+        if (personOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiDefaultResponse.error("Invalid email or password."));
+        }
+
+        Person person = personOpt.get();
+        Optional<User> userOpt = userService.findByPerson(person);
+
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiDefaultResponse.error("Invalid email or password."));
+        }
+
+        User user = userOpt.get();
+
+        if (!passwordEncoder.matches(authRequest.getPassword(), user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiDefaultResponse.error("Invalid email or password"));
+        }
+
+        UserResponse userResponse = UserResponse.fromEntity(user);
+
+        return ResponseEntity.ok(ApiDefaultResponse.success(userResponse, "Authentication successful!"));
+    }
 
     @PostMapping("/logout")
     @Operation(summary = "Log out user by clearing JWT cookie")
