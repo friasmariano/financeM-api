@@ -6,7 +6,10 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "pots")
+@Table(name = "pots",
+       uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "name"})
+)
+
 public class Pot {
 
     @Id
@@ -24,8 +27,8 @@ public class Pot {
     @Column(precision = 10, scale = 2)
     private BigDecimal currentAmount;
 
-    @OneToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     public Pot() {

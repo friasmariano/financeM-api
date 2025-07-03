@@ -33,7 +33,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-
     private static final Logger LOG = LoggerFactory.getLogger(AuthController.class);
 
     public final TokenService tokenService;
@@ -62,12 +61,12 @@ public class AuthController {
     public ResponseEntity<ApiDefaultResponse<UserResponse>> validateSession(@RequestBody AuthRequest authRequest,
                                                                             HttpServletResponse response) {
 
-//        Bucket bucket = rateLimiterService.resolveBucket(authRequest.getEmail());
-//
-//        if (!bucket.tryConsume(1)) {
-//            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-//                    .body(ApiDefaultResponse.error("Too many attempts. Please try again later"));
-//        }
+        Bucket bucket = rateLimiterService.resolveBucket(authRequest.getEmail());
+
+        if (!bucket.tryConsume(1)) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(ApiDefaultResponse.error("Too many attempts. Please try again later"));
+        }
 
         Optional<Person> personOpt = personService.findByEmail(authRequest.getEmail());
         if (personOpt.isEmpty()) {
