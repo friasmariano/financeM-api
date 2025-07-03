@@ -29,4 +29,8 @@ public class ApiDefaultResponse<T> {
     public T getData() {
         return data;
     }
+
+    public String getMessage() {
+        return message;
+    }
 }
