@@ -45,7 +45,7 @@ public class PotController {
     })
     public ApiDefaultResponse<Pot> create(@Valid @RequestBody CreatePotRequest request, @AuthenticationPrincipal Jwt jwt) {
         User user = getAuthenticatedUser(jwt);
-
+        //
         Pot pot = new Pot();
         pot.setName(request.getName());
         pot.setGoalAmount(request.getGoalAmount());
