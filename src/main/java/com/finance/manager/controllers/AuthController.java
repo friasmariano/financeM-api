@@ -1,6 +1,8 @@
 
 package com.finance.manager.controllers;
 
+import com.finance.manager.exceptions.InvalidCredentialsException;
+import com.finance.manager.exceptions.TooManyAttemptsException;
 import com.finance.manager.models.Person;
 import com.finance.manager.models.User;
 import com.finance.manager.models.requests.AuthRequest;
@@ -28,7 +30,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -41,13 +42,9 @@ public class AuthController {
     private final UserService userService;
     private final RateLimiterService rateLimiterService;
 
-    public AuthController(TokenService tokenService,
-                          HttpServletResponse response,
-                          AuthenticationManager authenticationManager,
-                          PasswordEncoder passwordEncoder,
-                          PersonService personService,
-                          UserService userService,
-                          RateLimiterService rateLimiterService) {
+    public AuthController(TokenService tokenService, HttpServletResponse response,
+                          AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder,
+                          PersonService personService, UserService userService, RateLimiterService rateLimiterService) {
         this.tokenService = tokenService;
         this.authenticationManager = authenticationManager;
         this.personService = personService;
@@ -58,56 +55,49 @@ public class AuthController {
     @PostMapping("/authenticate")
     @Operation(summary = "Authenticate user and return user data")
     @ApiResponse(responseCode = "200", description = "Authentication successful")
-    public ResponseEntity<ApiDefaultResponse<UserResponse>> validateSession(@RequestBody AuthRequest authRequest,
-                                                                            HttpServletResponse response) {
+    public ResponseEntity<ApiDefaultResponse<UserResponse>>
+                           validateSession(@RequestBody AuthRequest authRequest,
+                                           HttpServletResponse response) {
 
         Bucket bucket = rateLimiterService.resolveBucket(authRequest.getEmail());
 
         if (!bucket.tryConsume(1)) {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                    .body(ApiDefaultResponse.error("Too many attempts. Please try again later"));
+            throw new TooManyAttemptsException("Too many attempts. Please try again later.");
         }
 
-        Optional<Person> personOpt = personService.findByEmail(authRequest.getEmail());
-        if (personOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiDefaultResponse.error("Invalid email or password."));
-        }
+        Person person = personService.findByEmail(authRequest.getEmail())
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password."));
 
-        Optional<User> userOpt = userService.findByPerson(personOpt.get());
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiDefaultResponse.error("Invalid email or password."));
-        }
+        User user = userService.findByPerson(person)
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password."));
 
-        User user = userOpt.get();
-        UserResponse userResponse = UserResponse.fromEntity(user);
+        Authentication authentication;
 
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(userResponse.username(), authRequest.getPassword())
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(user.getUsername(), authRequest.getPassword())
             );
-
-            LOG.debug("Token request for user: {}", userResponse.username());
-            String token = tokenService.generateToken(authentication);
-            LOG.debug("Token successfully generated for user '{}'", userResponse.username());
-
-            // Set up the HTTP-only cookie
-            Cookie cookie = new Cookie("jwt", token);
-            cookie.setHttpOnly(true);
-            cookie.setSecure(false); // Only for development; set to true in production
-            cookie.setPath("/");
-            cookie.setMaxAge(3600);
-            cookie.setAttribute("SameSite", "Lax");
-            response.addCookie(cookie);
-
-            return ResponseEntity.ok(ApiDefaultResponse.success(userResponse, "Authentication successful!"));
 
         } catch (AuthenticationException ex) {
             LOG.warn("Authentication failed for user: {}", authRequest.getEmail());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiDefaultResponse.error("Invalid email or password."));
+            throw new InvalidCredentialsException("Invalid email or password.");
         }
+
+        LOG.debug("Token request for user: {}", user.getUsername());
+        String token = tokenService.generateToken(authentication);
+        LOG.debug("Token successfully generated for user '{}'", user.getUsername());
+
+        // Set up the HTTP-only cookie
+        Cookie cookie = new Cookie("jwt", token);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false); // Only for development; set to true in production
+        cookie.setPath("/");
+        cookie.setMaxAge(3600);
+        cookie.setAttribute("SameSite", "Lax");
+        response.addCookie(cookie);
+
+        UserResponse userResponse = UserResponse.fromEntity(user);
+        return ResponseEntity.ok(ApiDefaultResponse.success(userResponse, "Authentication successful!"));
     }
 
     @PostMapping("/logout")
@@ -125,10 +115,7 @@ public class AuthController {
         response.addCookie(cookie);
 
         LogoutResponse logoutData = new LogoutResponse(Instant.now());
-        ApiDefaultResponse<LogoutResponse> apiResponse =
-                ApiDefaultResponse.success(logoutData, "User logged out successfully!");
-
-        return ResponseEntity.ok(apiResponse);
+        return ResponseEntity.ok(ApiDefaultResponse.success(logoutData, "User logged out successfully!"));
     }
 
 }

@@ -1,6 +1,7 @@
 
 package com.finance.manager.config;
 
+import com.finance.manager.security.CustomJwtGrantedAuthoritiesConverter;
 import com.finance.manager.services.JpaUserDetailsService;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -29,7 +30,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
 
 import java.util.Arrays;
 
@@ -41,20 +41,28 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class SecurityConfig {
     private final JpaUserDetailsService jpaUserDetailsService;
     private final RsaKeyProperties rsaKeys;
-    private final JwtAuthenticationConverter jwtAuthConverter;
+    // private final JwtAuthenticationConverter jwtAuthConverter;
     private final Environment env;
     private final NotFoundAccessDeniedHandler notFoundAccessDeniedHandler;
 
     public SecurityConfig(JpaUserDetailsService jpaUserDetailsService,
                           RsaKeyProperties rsaKeys,
-                          JwtAuthenticationConverter jwtAuthConverter,
                           Environment env,
                           NotFoundAccessDeniedHandler notFoundAccessDeniedHandler) {
         this.jpaUserDetailsService = jpaUserDetailsService;
         this.rsaKeys = rsaKeys;
-        this.jwtAuthConverter = jwtAuthConverter;
         this.env = env;
         this.notFoundAccessDeniedHandler = notFoundAccessDeniedHandler;
+    }
+
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthConverter() {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(new CustomJwtGrantedAuthoritiesConverter());
+
+        return converter;
+
     }
 
     @Bean
@@ -105,7 +113,8 @@ public class SecurityConfig {
                 .userDetailsService(jpaUserDetailsService)
                 .oauth2ResourceServer(oauth -> oauth
                         .jwt(token -> token
-                                .jwtAuthenticationConverter(jwtAuthConverter))
+                                .jwtAuthenticationConverter(jwtAuthConverter())
+                        )
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
