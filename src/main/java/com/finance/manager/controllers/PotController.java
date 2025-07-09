@@ -44,6 +44,7 @@ public class PotController {
             @ApiResponse(responseCode = "401", description = "User not authenticated")
     })
     public ApiDefaultResponse<Pot> create(@Valid @RequestBody CreatePotRequest request, @AuthenticationPrincipal Jwt jwt) {
+        System.out.println("JWT sub: " + jwt.getSubject());
         User user = getAuthenticatedUser(jwt);
         //
         Pot pot = new Pot();

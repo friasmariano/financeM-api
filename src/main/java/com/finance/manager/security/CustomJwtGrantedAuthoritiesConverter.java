@@ -32,7 +32,7 @@ public class CustomJwtGrantedAuthoritiesConverter implements Converter<Jwt, Coll
         if (roles == null) return Collections.emptyList();
 
         return roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
 
     }

@@ -1,6 +1,7 @@
 
 package com.finance.manager.config;
 
+import com.finance.manager.security.CookieBearerTokenResolver;
 import com.finance.manager.security.CustomJwtGrantedAuthoritiesConverter;
 import com.finance.manager.services.JpaUserDetailsService;
 import com.nimbusds.jose.jwk.JWK;
@@ -26,6 +27,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -41,7 +43,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class SecurityConfig {
     private final JpaUserDetailsService jpaUserDetailsService;
     private final RsaKeyProperties rsaKeys;
-    // private final JwtAuthenticationConverter jwtAuthConverter;
     private final Environment env;
     private final NotFoundAccessDeniedHandler notFoundAccessDeniedHandler;
 
@@ -73,7 +74,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:3000/"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
@@ -82,6 +83,11 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    public BearerTokenResolver bearerTokenResolver() {
+        return new CookieBearerTokenResolver();
     }
 
     @Bean
@@ -112,6 +118,7 @@ public class SecurityConfig {
                         .accessDeniedHandler(notFoundAccessDeniedHandler))
                 .userDetailsService(jpaUserDetailsService)
                 .oauth2ResourceServer(oauth -> oauth
+                        .bearerTokenResolver(bearerTokenResolver())
                         .jwt(token -> token
                                 .jwtAuthenticationConverter(jwtAuthConverter())
                         )
