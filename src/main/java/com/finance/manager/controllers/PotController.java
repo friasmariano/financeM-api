@@ -7,12 +7,15 @@ import com.finance.manager.models.Pot;
 import com.finance.manager.models.User;
 import com.finance.manager.models.requests.CreatePotRequest;
 import com.finance.manager.models.responses.ApiDefaultResponse;
+import com.finance.manager.models.responses.PotResponse;
 import com.finance.manager.repositories.UserRepository;
 import com.finance.manager.services.PotService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -43,10 +46,9 @@ public class PotController {
             @ApiResponse(responseCode = "200", description = "Pot created successfully"),
             @ApiResponse(responseCode = "401", description = "User not authenticated")
     })
-    public ApiDefaultResponse<Pot> create(@Valid @RequestBody CreatePotRequest request, @AuthenticationPrincipal Jwt jwt) {
-        System.out.println("JWT sub: " + jwt.getSubject());
+    public ResponseEntity<ApiDefaultResponse<PotResponse>> create(@Valid @RequestBody CreatePotRequest request, @AuthenticationPrincipal Jwt jwt) {
         User user = getAuthenticatedUser(jwt);
-        //
+
         Pot pot = new Pot();
         pot.setName(request.getName());
         pot.setGoalAmount(request.getGoalAmount());
@@ -54,7 +56,18 @@ public class PotController {
         pot.setUser(user);
 
         Pot createdPot = potService.create(pot);
-        return ApiDefaultResponse.success(createdPot, "Pot created successfully!");
+
+        PotResponse response = new PotResponse(
+                createdPot.getId(),
+                createdPot.getName(),
+                createdPot.getGoalAmount(),
+                createdPot.getCurrentAmount(),
+                createdPot.getUser().getId()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiDefaultResponse.success(response, "Pot created successfully!"));
     }
 
     @GetMapping
