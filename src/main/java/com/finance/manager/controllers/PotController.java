@@ -43,7 +43,7 @@ public class PotController {
     @PostMapping
     @Operation(summary = "Create a new Pot")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Pot created successfully"),
+            @ApiResponse(responseCode = "201", description = "Pot created successfully"),
             @ApiResponse(responseCode = "401", description = "User not authenticated")
     })
     public ResponseEntity<ApiDefaultResponse<PotResponse>> create(@Valid @RequestBody CreatePotRequest request, @AuthenticationPrincipal Jwt jwt) {
@@ -72,11 +72,21 @@ public class PotController {
 
     @GetMapping
     @Operation(summary = "Get all pots for the authenticated user")
-    public ApiDefaultResponse<List<Pot>> getAllByUser(@AuthenticationPrincipal Jwt jwt) {
+    public ApiDefaultResponse<List<PotResponse>> getAllByUser(@AuthenticationPrincipal Jwt jwt) {
         User user = getAuthenticatedUser(jwt);
         List<Pot> pots = potService.getByUser(user);
 
-        return ApiDefaultResponse.success(pots, "Pots retrieved successfully");
+        List<PotResponse> potResponses = pots.stream()
+                .map(pot -> new PotResponse(
+                        pot.getId(),
+                        pot.getName(),
+                        pot.getGoalAmount(),
+                        pot.getCurrentAmount(),
+                        pot.getUser().getId()
+                ))
+                .toList();
+
+        return ApiDefaultResponse.success(potResponses, "Pots retrieved successfully");
     }
 
     @GetMapping("/{id}")

@@ -30,6 +30,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -62,14 +63,27 @@ public class AuthController {
         Bucket bucket = rateLimiterService.resolveBucket(authRequest.getEmail());
 
         if (!bucket.tryConsume(1)) {
-            throw new TooManyAttemptsException("Too many attempts. Please try again later.");
+            return ResponseEntity
+                    .status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(ApiDefaultResponse.error("Too many attempts. Please try again later."));
         }
 
-        Person person = personService.findByEmail(authRequest.getEmail())
-                .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password."));
+        Optional<Person> personOpt = personService.findByEmail(authRequest.getEmail());
+        if (personOpt.isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiDefaultResponse.error("Invalid email or password."));
+        }
+        Person person = personOpt.get();
 
-        User user = userService.findByPerson(person)
-                .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password."));
+        Optional<User> userOpt = userService.findByPerson(person);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiDefaultResponse.error("Invalid email or password."));
+        }
+        User user = userOpt.get();
+
 
         Authentication authentication;
 
@@ -80,7 +94,9 @@ public class AuthController {
 
         } catch (AuthenticationException ex) {
             LOG.warn("Authentication failed for user: {}", authRequest.getEmail());
-            throw new InvalidCredentialsException("Invalid email or password.");
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiDefaultResponse.error("Invalid email or password."));
         }
 
         LOG.debug("Token request for user: {}", user.getUsername());
