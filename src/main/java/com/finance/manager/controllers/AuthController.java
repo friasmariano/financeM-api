@@ -119,7 +119,7 @@ public class AuthController {
     @PostMapping("/logout")
     @Operation(summary = "Log out user by clearing JWT cookie")
     @ApiResponse(responseCode = "200", description = "Logout successful")
-    public ResponseEntity<ApiDefaultResponse<LogoutResponse>> logout(HttpServletResponse response) {
+    public ResponseEntity<Void> logout(HttpServletResponse response) {
         Cookie cookie = new Cookie("jwt", "");
 
         cookie.setHttpOnly(true);
@@ -130,8 +130,7 @@ public class AuthController {
 
         response.addCookie(cookie);
 
-        LogoutResponse logoutData = new LogoutResponse(Instant.now());
-        return ResponseEntity.ok(ApiDefaultResponse.success(logoutData, "User logged out successfully!"));
+        return ResponseEntity.noContent().build();
     }
 
 }

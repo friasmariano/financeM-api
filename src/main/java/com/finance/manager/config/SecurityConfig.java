@@ -18,6 +18,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -91,6 +92,20 @@ public class SecurityConfig {
     }
 
     @Bean
+    public SecurityFilterChain logoutFilterChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/api/auth/logout")
+                .cors(withDefaults())
+                .authorizeHttpRequests(authz -> authz
+                        .anyRequest().permitAll()
+                )
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        return http.build();
+    }
+
+    @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         boolean isDev = Arrays.asList(env.getActiveProfiles()).contains("dev");
 
@@ -101,7 +116,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> {
                         // Public endpoints
-                        auth.requestMatchers("/api/auth/authenticate", "/api/auth/logout").permitAll();
+                        auth.requestMatchers("/api/auth/authenticate").permitAll();
 
                         if (isDev) {
                             auth.requestMatchers("/docs.html").permitAll();
@@ -119,10 +134,7 @@ public class SecurityConfig {
                 .userDetailsService(jpaUserDetailsService)
                 .oauth2ResourceServer(oauth -> oauth
                         .bearerTokenResolver(bearerTokenResolver())
-                        .jwt(token -> token
-                                .jwtAuthenticationConverter(jwtAuthConverter())
-                        )
-                )
+                        .jwt(jwt -> { jwt.jwtAuthenticationConverter(jwtAuthConverter());}))
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .headers(headers -> headers
