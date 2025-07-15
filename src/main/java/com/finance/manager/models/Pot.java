@@ -1,3 +1,4 @@
+
 package com.finance.manager.models;
 
 import jakarta.persistence.*;

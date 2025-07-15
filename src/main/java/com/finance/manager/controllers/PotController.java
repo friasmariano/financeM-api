@@ -42,10 +42,7 @@ public class PotController {
 
     @PostMapping
     @Operation(summary = "Create a new Pot")
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Pot created successfully"),
-            @ApiResponse(responseCode = "401", description = "User not authenticated")
-    })
+    @ApiResponses({ @ApiResponse(responseCode = "201", description = "Pot created successfully") })
     public ResponseEntity<ApiDefaultResponse<PotResponse>> create(@Valid @RequestBody CreatePotRequest request, @AuthenticationPrincipal Jwt jwt) {
         User user = getAuthenticatedUser(jwt);
 
