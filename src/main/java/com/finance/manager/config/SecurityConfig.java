@@ -2,6 +2,7 @@
 package com.finance.manager.config;
 
 import com.finance.manager.security.CookieBearerTokenResolver;
+import com.finance.manager.security.CustomAuthenticationEntryPoint;
 import com.finance.manager.security.CustomJwtGrantedAuthoritiesConverter;
 import com.finance.manager.services.JpaUserDetailsService;
 import com.nimbusds.jose.jwk.JWK;
@@ -46,15 +47,18 @@ public class SecurityConfig {
     private final RsaKeyProperties rsaKeys;
     private final Environment env;
     private final NotFoundAccessDeniedHandler notFoundAccessDeniedHandler;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     public SecurityConfig(JpaUserDetailsService jpaUserDetailsService,
                           RsaKeyProperties rsaKeys,
                           Environment env,
-                          NotFoundAccessDeniedHandler notFoundAccessDeniedHandler) {
+                          NotFoundAccessDeniedHandler notFoundAccessDeniedHandler,
+                          CustomAuthenticationEntryPoint customAuthenticationEntryPoint) {
         this.jpaUserDetailsService = jpaUserDetailsService;
         this.rsaKeys = rsaKeys;
         this.env = env;
         this.notFoundAccessDeniedHandler = notFoundAccessDeniedHandler;
+        this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
     }
 
 
@@ -130,7 +134,9 @@ public class SecurityConfig {
                     }
                 )
                 .exceptionHandling(ex -> ex
-                        .accessDeniedHandler(notFoundAccessDeniedHandler))
+                        .accessDeniedHandler(notFoundAccessDeniedHandler)
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                )
                 .userDetailsService(jpaUserDetailsService)
                 .oauth2ResourceServer(oauth -> oauth
                         .bearerTokenResolver(bearerTokenResolver())
