@@ -15,43 +15,44 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(PotNotFoundException.class)
-    public ResponseEntity<?> handlePotNotFound(PotNotFoundException ex) {
+    public ResponseEntity<ApiDefaultResponse<Object>> handlePotNotFound(PotNotFoundException ex) {
         return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
+    @ExceptionHandler(PotNameAlreadyUsedException.class)
+    public ResponseEntity<ApiDefaultResponse<Object>> handlePotExits(PotNameAlreadyUsedException ex) {
+        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleUserNotFound(UserNotFoundException ex) {
+    public ResponseEntity<ApiDefaultResponse<Object>> handleUserNotFound(UserNotFoundException ex) {
         return buildErrorResponse(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
 
     @ExceptionHandler(AccessDeniedPotOperationException.class)
-    public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedPotOperationException ex) {
+    public ResponseEntity<ApiDefaultResponse<Object>> handleAccessDenied(AccessDeniedPotOperationException ex) {
         return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
+    public ResponseEntity<ApiDefaultResponse<Object>> handleGeneric(Exception ex) {
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
     }
 
     @ExceptionHandler(TooManyAttemptsException.class)
-    public ResponseEntity<Map<String, Object>> handleTooManyAttempts(TooManyAttemptsException ex) {
+    public ResponseEntity<ApiDefaultResponse<Object>> handleTooManyAttempts(TooManyAttemptsException ex) {
         return buildErrorResponse(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage());
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<Map<String, Object>> handleInvalidCredentials(InvalidCredentialsException ex) {
+    public ResponseEntity<ApiDefaultResponse<Object>> handleInvalidCredentials(InvalidCredentialsException ex) {
         return buildErrorResponse(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
 
-    private ResponseEntity<Map<String, Object>> buildErrorResponse(HttpStatus status, String message) {
-        Map<String, Object> body = Map.of(
-                "timestamp", LocalDateTime.now(),
-                "status", status.value(),
-                "error", message
-        );
+    private ResponseEntity<ApiDefaultResponse<Object>> buildErrorResponse(HttpStatus status, String message) {
+        ApiDefaultResponse<Object> response = ApiDefaultResponse.error(message);
 
-        return ResponseEntity.status(status).body(body);
+        return ResponseEntity.status(status).body(response);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
