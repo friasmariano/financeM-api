@@ -5,7 +5,7 @@ import com.finance.manager.exceptions.PotNotFoundException;
 import com.finance.manager.exceptions.UserNotFoundException;
 import com.finance.manager.models.Pot;
 import com.finance.manager.models.User;
-import com.finance.manager.models.requests.CreatePotRequest;
+import com.finance.manager.models.requests.PotRequest;
 import com.finance.manager.models.responses.ApiDefaultResponse;
 import com.finance.manager.models.responses.PotResponse;
 import com.finance.manager.repositories.UserRepository;
@@ -43,7 +43,7 @@ public class PotController {
     @PostMapping
     @Operation(summary = "Create a new Pot")
     @ApiResponses({ @ApiResponse(responseCode = "201", description = "Pot created successfully") })
-    public ResponseEntity<ApiDefaultResponse<PotResponse>> create(@Valid @RequestBody CreatePotRequest request, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<ApiDefaultResponse<PotResponse>> create(@Valid @RequestBody PotRequest request, @AuthenticationPrincipal Jwt jwt) {
         User user = getAuthenticatedUser(jwt);
 
         Pot pot = new Pot();
@@ -109,10 +109,9 @@ public class PotController {
     @Operation(summary = "Update an existing pot")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pot updated successfully"),
-            @ApiResponse(responseCode = "404", description = "User is not allowed to update this pot"),
-            @ApiResponse(responseCode = "404", description = "Pot not found")
+            @ApiResponse(responseCode = "404", description = "Pot not found or user is not allowed to update this pot")
     })
-    public ApiDefaultResponse<Pot> update(@PathVariable Long id, @Valid @RequestBody Pot potUpdate, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<ApiDefaultResponse<PotResponse>> update(@PathVariable Long id, @Valid @RequestBody PotRequest potUpdate, @AuthenticationPrincipal Jwt jwt) {
         User user = getAuthenticatedUser(jwt);
         Pot existingPot = potService.getById(id)
                 .orElseThrow(() -> new PotNotFoundException("Pot not found"));
@@ -121,9 +120,24 @@ public class PotController {
               throw new AccessDeniedPotOperationException("You are not allowed to update this pot.");
         }
 
-        potUpdate.setUser(user);
-        Pot updatedPot = potService.update(id, potUpdate);
-        return ApiDefaultResponse.success(updatedPot, "Pot updated successfully");
+        existingPot.setUser(user);
+        existingPot.setName(potUpdate.getName());
+        existingPot.setGoalAmount(potUpdate.getGoalAmount());
+        existingPot.setCurrentAmount(potUpdate.getCurrentAmount());
+
+        Pot updatedPot = potService.update(id, existingPot);
+
+        PotResponse response = new PotResponse(
+                updatedPot.getId(),
+                updatedPot.getName(),
+                updatedPot.getGoalAmount(),
+                updatedPot.getCurrentAmount(),
+                updatedPot.getUser().getId()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiDefaultResponse.success(response, "Pot updated successfully!"));
     }
 
     @DeleteMapping("/{id}")

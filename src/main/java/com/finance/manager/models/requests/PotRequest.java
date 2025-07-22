@@ -4,7 +4,7 @@ import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 
-public class CreatePotRequest {
+public class PotRequest {
 
     @NotBlank(message = "Name is required")
     @Size(min = 3, max = 50, message = "Name must be between 3 and 50 characters")
@@ -20,10 +20,10 @@ public class CreatePotRequest {
     @DecimalMax(value = "99999999.99", message = "Current amount must not exceed 99,999,999.99")
     private BigDecimal currentAmount;
 
-    public CreatePotRequest() {
+    public PotRequest() {
     }
 
-    public CreatePotRequest(String name, BigDecimal goalAmount, BigDecimal currentAmount) {
+    public PotRequest(String name, BigDecimal goalAmount, BigDecimal currentAmount) {
         this.name = name;
         this.goalAmount = goalAmount;
         this.currentAmount = currentAmount;
