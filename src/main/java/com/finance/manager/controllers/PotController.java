@@ -3,6 +3,7 @@ package com.finance.manager.controllers;
 import com.finance.manager.exceptions.AccessDeniedPotOperationException;
 import com.finance.manager.exceptions.PotNotFoundException;
 import com.finance.manager.exceptions.UserNotFoundException;
+import com.finance.manager.mapper.PotMapper;
 import com.finance.manager.models.Pot;
 import com.finance.manager.models.User;
 import com.finance.manager.models.requests.PotRequest;
@@ -28,10 +29,12 @@ public class PotController {
 
     private final PotService potService;
     private final UserRepository userRepository;
+    private final PotMapper potMapper;
 
-    public PotController(PotService potService, UserRepository userRepository) {
+    public PotController(PotService potService, UserRepository userRepository, PotMapper potMapper) {
         this.potService = potService;
         this.userRepository = userRepository;
+        this.potMapper = potMapper;
     }
 
     private User getAuthenticatedUser(Jwt jwt) {
@@ -144,13 +147,16 @@ public class PotController {
     @Operation(summary = "Delete a pot by ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pot deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "User is not allowed to delete this pot"),
-            @ApiResponse(responseCode = "404", description = "Pot not found")
+            @ApiResponse(responseCode = "404", description = "Pot not found or user is not allowed to delete this pot")
     })
-    public ApiDefaultResponse<String> delete(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<ApiDefaultResponse<PotResponse>> delete(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
         User user = getAuthenticatedUser(jwt);
+
+        Pot pot = potService.findByIdAndUser(id, user);
         potService.delete(id, user);
 
-        return ApiDefaultResponse.success(null, "Pot deleted successfully");
+        PotResponse potResponse = potMapper.toResponse(pot);
+
+        return ResponseEntity.ok(ApiDefaultResponse.success(potResponse, "Pot deleted successfully!"));
     }
 }

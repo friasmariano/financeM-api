@@ -53,6 +53,11 @@ public class PotService {
         return potRepository.save(existingPot);
     }
 
+    public Pot findByIdAndUser(Long id, User user) {
+        return potRepository.findByIdAndUser(id, user)
+                .orElseThrow(() -> new PotNotFoundException("Pot not found."));
+    }
+
     public void delete(Long id, User user) {
         Pot pot = potRepository.findById(id)
                 .orElseThrow(() -> new PotNotFoundException("Pot not found"));
