@@ -11,4 +11,5 @@ public interface PotRepository extends CrudRepository<Pot, Long> {
     boolean existsByUserAndName(User user, String name);
     List<Pot> findAllByUser(User user);
     Optional<Pot> findByIdAndUser(Long id, User user);
+    long countByUser(User user);
 }

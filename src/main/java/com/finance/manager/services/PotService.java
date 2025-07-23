@@ -1,5 +1,6 @@
 package com.finance.manager.services;
 
+import com.finance.manager.exceptions.PotLimitException;
 import com.finance.manager.exceptions.PotNameAlreadyUsedException;
 import com.finance.manager.exceptions.PotNotFoundException;
 import com.finance.manager.models.Pot;
@@ -21,6 +22,12 @@ public class PotService {
     }
 
     public Pot create(Pot pot) {
+        long userPotCount = potRepository.countByUser(pot.getUser());
+
+        if (hasReachedPotLimit(pot.getUser())) {
+            throw new PotLimitException("You reached the pot limit of 20 pots.");
+        }
+
         if (potRepository.existsByUserAndName(pot.getUser(), pot.getName())) {
             throw new PotNameAlreadyUsedException("You already have a pot with this name");
         }
@@ -67,6 +74,10 @@ public class PotService {
         }
 
         potRepository.delete(pot);
+    }
+
+    public boolean hasReachedPotLimit(User user) {
+        return potRepository.countByUser(user) >= 20;
     }
 
 }

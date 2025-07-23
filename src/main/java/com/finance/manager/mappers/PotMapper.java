@@ -1,4 +1,4 @@
-package com.finance.manager.mapper;
+package com.finance.manager.mappers;
 
 import com.finance.manager.models.Pot;
 import com.finance.manager.models.responses.PotResponse;

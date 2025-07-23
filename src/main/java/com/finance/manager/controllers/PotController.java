@@ -3,7 +3,7 @@ package com.finance.manager.controllers;
 import com.finance.manager.exceptions.AccessDeniedPotOperationException;
 import com.finance.manager.exceptions.PotNotFoundException;
 import com.finance.manager.exceptions.UserNotFoundException;
-import com.finance.manager.mapper.PotMapper;
+import com.finance.manager.mappers.PotMapper;
 import com.finance.manager.models.Pot;
 import com.finance.manager.models.User;
 import com.finance.manager.models.requests.PotRequest;
@@ -155,8 +155,14 @@ public class PotController {
         Pot pot = potService.findByIdAndUser(id, user);
         potService.delete(id, user);
 
-        PotResponse potResponse = potMapper.toResponse(pot);
+        PotResponse response = new PotResponse(
+                pot.getId(),
+                pot.getName(),
+                pot.getGoalAmount(),
+                pot.getCurrentAmount(),
+                pot.getUser().getId()
+        );
 
-        return ResponseEntity.ok(ApiDefaultResponse.success(potResponse, "Pot deleted successfully!"));
+        return ResponseEntity.ok(ApiDefaultResponse.success(response, "Pot deleted successfully!"));
     }
 }
