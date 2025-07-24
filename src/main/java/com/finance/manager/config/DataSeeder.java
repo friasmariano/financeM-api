@@ -39,13 +39,11 @@ public class DataSeeder {
                 ));
             }
 
-            if(budgetCategoryRepository.count() == 0) {
-                budgetCategoryRepository.saveAll(List.of(
-                        new BudgetCategory("Fixed"),
-                        new BudgetCategory("Flexible"),
-                        new BudgetCategory("Zero-Based"),
-                        new BudgetCategory("50/30/20")
-                ));
+            List<String> categories = List.of("Fixed", "Flexible", "Zero-Based", "50/30/20");
+            for (String name: categories) {
+                if (!budgetCategoryRepository.existsByName(name)) {
+                    budgetCategoryRepository.save(new BudgetCategory(name));
+                }
             }
 
             if(personRepository.count() == 0) {

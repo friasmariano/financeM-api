@@ -2,15 +2,13 @@ package com.finance.manager.controllers;
 
 import com.finance.manager.exceptions.AccessDeniedPotOperationException;
 import com.finance.manager.exceptions.PotNotFoundException;
-import com.finance.manager.exceptions.UserNotFoundException;
-import com.finance.manager.mappers.PotMapper;
 import com.finance.manager.models.Pot;
 import com.finance.manager.models.User;
 import com.finance.manager.models.requests.PotRequest;
 import com.finance.manager.models.responses.ApiDefaultResponse;
 import com.finance.manager.models.responses.PotResponse;
-import com.finance.manager.repositories.UserRepository;
 import com.finance.manager.services.PotService;
+import com.finance.manager.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -28,26 +26,18 @@ import java.util.List;
 public class PotController {
 
     private final PotService potService;
-    private final UserRepository userRepository;
-    private final PotMapper potMapper;
+    private final UserService userService;
 
-    public PotController(PotService potService, UserRepository userRepository, PotMapper potMapper) {
+    public PotController(PotService potService, UserService userService) {
         this.potService = potService;
-        this.userRepository = userRepository;
-        this.potMapper = potMapper;
-    }
-
-    private User getAuthenticatedUser(Jwt jwt) {
-        String subject = jwt.getSubject();
-        return userRepository.findByUsername(subject)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        this.userService = userService;
     }
 
     @PostMapping
     @Operation(summary = "Create a new Pot")
     @ApiResponses({ @ApiResponse(responseCode = "201", description = "Pot created successfully") })
     public ResponseEntity<ApiDefaultResponse<PotResponse>> create(@Valid @RequestBody PotRequest request, @AuthenticationPrincipal Jwt jwt) {
-        User user = getAuthenticatedUser(jwt);
+        User user = userService.getAuthenticatedUser(jwt);
 
         Pot pot = new Pot();
         pot.setName(request.getName());
@@ -73,7 +63,7 @@ public class PotController {
     @GetMapping
     @Operation(summary = "Get all pots for the authenticated user")
     public ApiDefaultResponse<List<PotResponse>> getAllByUser(@AuthenticationPrincipal Jwt jwt) {
-        User user = getAuthenticatedUser(jwt);
+        User user = userService.getAuthenticatedUser(jwt);
         List<Pot> pots = potService.getByUser(user);
 
         List<PotResponse> potResponses = pots.stream()
@@ -97,7 +87,7 @@ public class PotController {
             @ApiResponse(responseCode = "404", description = "Pot not found")
     })
     public ApiDefaultResponse<Pot> getById(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
-        User user = getAuthenticatedUser(jwt);
+        User user = userService.getAuthenticatedUser(jwt);
         Pot pot = potService.getById(id)
                 .orElseThrow(() -> new PotNotFoundException("Pot not found"));
 
@@ -115,7 +105,7 @@ public class PotController {
             @ApiResponse(responseCode = "404", description = "Pot not found or user is not allowed to update this pot")
     })
     public ResponseEntity<ApiDefaultResponse<PotResponse>> update(@PathVariable Long id, @Valid @RequestBody PotRequest potUpdate, @AuthenticationPrincipal Jwt jwt) {
-        User user = getAuthenticatedUser(jwt);
+        User user = userService.getAuthenticatedUser(jwt);
         Pot existingPot = potService.getById(id)
                 .orElseThrow(() -> new PotNotFoundException("Pot not found"));
 
@@ -150,7 +140,7 @@ public class PotController {
             @ApiResponse(responseCode = "404", description = "Pot not found or user is not allowed to delete this pot")
     })
     public ResponseEntity<ApiDefaultResponse<PotResponse>> delete(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
-        User user = getAuthenticatedUser(jwt);
+        User user = userService.getAuthenticatedUser(jwt);
 
         Pot pot = potService.findByIdAndUser(id, user);
         potService.delete(id, user);

@@ -49,6 +49,22 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
 
+    @ExceptionHandler(BudgetNotFoundException.class)
+    public ResponseEntity<ApiDefaultResponse<Object>> budgetNotFound(BudgetNotFoundException ex) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidUserException.class)
+    public ResponseEntity<ApiDefaultResponse<Object>> invalidUser(InvalidUserException ex) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiDefaultResponse<Object>> handleRuntime(RuntimeException ex) {
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred: " + ex.getMessage());
+    }
+
+
     private ResponseEntity<ApiDefaultResponse<Object>> buildErrorResponse(HttpStatus status, String message) {
         ApiDefaultResponse<Object> response = ApiDefaultResponse.error(message);
 

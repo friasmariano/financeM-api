@@ -1,8 +1,10 @@
 package com.finance.manager.services;
 
+import com.finance.manager.exceptions.UserNotFoundException;
 import com.finance.manager.models.Person;
 import com.finance.manager.models.User;
 import com.finance.manager.repositories.UserRepository;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -37,6 +39,12 @@ public class UserService {
 
     public void deleteById(Long id) {
         userRepository.deleteById(id);
+    }
+
+    public User getAuthenticatedUser(Jwt jwt) {
+        String subject = jwt.getSubject();
+        return userRepository.findByUsername(subject)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 
 }
