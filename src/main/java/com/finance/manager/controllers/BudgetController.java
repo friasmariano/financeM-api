@@ -10,15 +10,21 @@ import com.finance.manager.models.responses.BudgetResponse;
 import com.finance.manager.services.BudgetCategoryService;
 import com.finance.manager.services.BudgetService;
 import com.finance.manager.services.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
+@RequestMapping("/api/budgets")
+@Tag(name = "Budgets", description = "Handles budget creation, retrieval, updating and deletion")
 public class BudgetController {
 
     private final BudgetService service;
@@ -32,22 +38,69 @@ public class BudgetController {
     }
 
     @PostMapping
+    @Operation(summary = "Create a new Budget")
+    @ApiResponses({ @ApiResponse(responseCode = "201", description = "Budget created successfully") })
     public ResponseEntity<ApiDefaultResponse<BudgetResponse>> create(@Valid @RequestBody BudgetRequest request, @AuthenticationPrincipal Jwt jwt) {
         User user = userService.getAuthenticatedUser(jwt);
         BudgetCategory category = categoryService.getById(request.getCategoryId())
                 .orElseThrow(() -> new BudgetCategoryNotFoundException("Category not found"));
 
-        Budget createdB = new Budget();
-        createdB.setCategory(category);
-        createdB.setLimitAmount(request.getLimitAmount());
-        createdB.setUser(user);
+        Budget created = new Budget();
+        created.setCategory(category);
+        created.setLimitAmount(request.getLimitAmount());
+        created.setUser(user);
 
-        Budget saved = service.create(createdB);
+        Budget saved = service.create(created);
 
-        BudgetResponse response = new BudgetResponse(saved);
+        return ResponseEntity.ok(new ApiDefaultResponse<> (true, new BudgetResponse(saved), "Budget created successfully!"));
+    }
 
-        ApiDefaultResponse<BudgetResponse> apiDefaultResponse = new ApiDefaultResponse<>(true, response, "Budget created successfully");
+    @GetMapping
+    @Operation(summary = "Get all budgets for the current user")
+    public ResponseEntity<ApiDefaultResponse<List<BudgetResponse>>> getAll(@AuthenticationPrincipal Jwt jwt) {
+        User user = userService.getAuthenticatedUser(jwt);
 
-        return ResponseEntity.ok(apiDefaultResponse);
+        List<BudgetResponse> response = service.getByUser(user)
+                .stream()
+                .map(BudgetResponse::new)
+                .toList();
+
+        return ResponseEntity.ok(new ApiDefaultResponse<>(true, response, "Budgets retrieved successfully!"));
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Get budget by ID")
+    public ResponseEntity<ApiDefaultResponse<BudgetResponse>> getById(@PathVariable Long id) {
+        Budget budget = service.getById(id);
+
+        return ResponseEntity.ok(new ApiDefaultResponse<>(true, new BudgetResponse(budget), "Budget found."));
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update the specified budget")
+    public ResponseEntity<ApiDefaultResponse<BudgetResponse>> update(@PathVariable Long id,
+                                                                     @Valid @RequestBody BudgetRequest request,
+                                                                     @AuthenticationPrincipal Jwt jwt) {
+        User user = userService.getAuthenticatedUser(jwt);
+        BudgetCategory category = categoryService.getById(request.getCategoryId())
+                .orElseThrow(() -> new BudgetCategoryNotFoundException("Category not found."));
+
+        Budget updated = new Budget();
+        updated.setId(id);
+        updated.setCategory(category);
+        updated.setLimitAmount(request.getLimitAmount());
+        updated.setUser(user);
+
+        Budget saved = service.update(id, updated);
+
+        return ResponseEntity.ok(new ApiDefaultResponse<>(true, new BudgetResponse(saved), "Budget updated successfully!"));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete the specified budget")
+    public ResponseEntity<ApiDefaultResponse<Void>> delete(@PathVariable Long id) {
+        service.delete(id);
+
+        return ResponseEntity.ok(new ApiDefaultResponse<>(true, null, "Budget deleted successfully!"));
     }
 }

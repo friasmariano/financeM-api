@@ -27,6 +27,7 @@ public class BudgetResponse {
         this.categoryId = budget.getCategory().getId();
         this.categoryName = budget.getCategory().getName();
         this.limitAmount = budget.getLimitAmount();
+        this.userId = budget.getUser().getId();
     }
 
     public Long getId() {
