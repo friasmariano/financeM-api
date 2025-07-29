@@ -49,6 +49,7 @@ public class BudgetController {
         created.setCategory(category);
         created.setLimitAmount(request.getLimitAmount());
         created.setUser(user);
+        created.setName(request.getName());
 
         Budget saved = service.create(created);
 
@@ -90,6 +91,7 @@ public class BudgetController {
         updated.setCategory(category);
         updated.setLimitAmount(request.getLimitAmount());
         updated.setUser(user);
+        updated.setName(request.getName());
 
         Budget saved = service.update(id, updated);
 

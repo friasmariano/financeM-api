@@ -1,6 +1,7 @@
 
 package com.finance.manager.services;
 
+import com.finance.manager.exceptions.BudgetNameAlreadyExistsForUser;
 import com.finance.manager.exceptions.BudgetNotFoundException;
 import com.finance.manager.exceptions.InvalidUserException;
 import com.finance.manager.models.Budget;
@@ -24,6 +25,14 @@ public class BudgetService {
     }
 
     public Budget create(Budget budget) {
+        if (budget.getUser() == null) {
+            throw new InvalidUserException("User cannot be null.");
+        }
+
+        if (budgetRepository.existsByNameAndUser((budget.getName()), budget.getUser())) {
+            throw new BudgetNameAlreadyExistsForUser("A budget with this name already exists for the user.");
+        }
+
         return budgetRepository.save(budget);
     }
 
@@ -49,11 +58,22 @@ public class BudgetService {
     public Budget update(Long id, Budget updatedB) {
         Budget existingB = getById(id);
 
+        if (budgetRepository.existsByNameAndUser(updatedB.getName(), updatedB.getUser()) &&
+                !existingB.getName().equals(updatedB.getName())) {
+            throw new BudgetNameAlreadyExistsForUser("Another budget with this name exists for the user.");
+        }
+
         existingB.setCategory(updatedB.getCategory());
         existingB.setLimitAmount(updatedB.getLimitAmount());
         existingB.setUser(updatedB.getUser());
+        existingB.setName(updatedB.getName());
 
         return budgetRepository.save(existingB);
+    }
+
+    public Budget getByNameAndUser(String name, User user) {
+        return budgetRepository.findByNameAndUser(name, user)
+                .orElseThrow(() -> new BudgetNotFoundException("The " + name + " budget was not found."));
     }
 
     public void delete(Long id) {

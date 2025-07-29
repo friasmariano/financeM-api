@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 
 public class BudgetResponse {
     private Long id;
+    private String name;
     private Long categoryId;
     private String categoryName;
     private BigDecimal limitAmount;
@@ -14,8 +15,9 @@ public class BudgetResponse {
     public BudgetResponse() {
     }
 
-    public BudgetResponse(Long id, Long categoryId, String categoryName, BigDecimal limitAmount, Long userId) {
+    public BudgetResponse(Long id, String name, Long categoryId, String categoryName, BigDecimal limitAmount, Long userId) {
         this.id = id;
+        this.name = name;
         this.categoryId = categoryId;
         this.categoryName = categoryName;
         this.limitAmount = limitAmount;
@@ -24,6 +26,7 @@ public class BudgetResponse {
 
     public BudgetResponse(Budget budget) {
         this.id = budget.getId();
+        this.name = budget.getName();
         this.categoryId = budget.getCategory().getId();
         this.categoryName = budget.getCategory().getName();
         this.limitAmount = budget.getLimitAmount();
@@ -68,5 +71,13 @@ public class BudgetResponse {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

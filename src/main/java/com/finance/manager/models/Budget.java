@@ -13,6 +13,10 @@ public class Budget {
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
+    @Column(length = 100)
+    private String name;
+
     @OneToOne
     @JoinColumn(name = "category_id")
     private BudgetCategory category;
@@ -26,11 +30,12 @@ public class Budget {
 
     public Budget() {}
 
-    public Budget(Long id, BudgetCategory category, BigDecimal limitAmount, User user) {
+    public Budget(Long id, BudgetCategory category, BigDecimal limitAmount, User user, String name) {
         this.id = id;
         this.category = category;
         this.limitAmount = limitAmount;
         this.user = user;
+        this.name = name;
     }
 
     public Long getId() {
@@ -63,5 +68,13 @@ public class Budget {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
     }
 }
