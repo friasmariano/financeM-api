@@ -1,0 +1,11 @@
+ALTER TABLE pots
+    ADD budget_id BIGINT;
+
+ALTER TABLE pots
+    ADD CONSTRAINT FK_POTS_ON_BUDGET FOREIGN KEY (budget_id) REFERENCES budgets (id);
+
+ALTER TABLE persons
+    ALTER COLUMN email SET NOT NULL;
+
+ALTER TABLE pots
+    ALTER COLUMN user_id SET NOT NULL;

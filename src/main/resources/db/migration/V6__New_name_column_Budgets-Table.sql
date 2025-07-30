@@ -1,0 +1,11 @@
+ALTER TABLE budgets
+    ADD name VARCHAR(100);
+
+ALTER TABLE budgets
+    ALTER COLUMN name SET NOT NULL;
+
+ALTER TABLE persons
+    ALTER COLUMN email SET NOT NULL;
+
+ALTER TABLE pots
+    ALTER COLUMN user_id SET NOT NULL;

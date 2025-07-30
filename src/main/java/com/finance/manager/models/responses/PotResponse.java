@@ -10,15 +10,18 @@ public class PotResponse {
     private BigDecimal currentAmount;
     private Long userId;
 
+    private Long budgetId;
+
     public PotResponse() {
     }
 
-    public PotResponse(Long id, String name, BigDecimal goalAmount, BigDecimal currentAmount, Long userId) {
+    public PotResponse(Long id, String name, BigDecimal goalAmount, BigDecimal currentAmount, Long userId, Long budgetId) {
         this.id = id;
         this.name = name;
         this.goalAmount = goalAmount;
         this.currentAmount = currentAmount;
         this.userId = userId;
+        this.budgetId = budgetId;
     }
 
     public Long getId() {
@@ -59,5 +62,13 @@ public class PotResponse {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public Long getBudgetId() {
+        return budgetId;
+    }
+
+    public void setBudgetId(Long budgetId) {
+        this.budgetId = budgetId;
     }
 }

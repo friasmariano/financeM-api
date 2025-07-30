@@ -2,11 +2,13 @@ package com.finance.manager.controllers;
 
 import com.finance.manager.exceptions.AccessDeniedPotOperationException;
 import com.finance.manager.exceptions.PotNotFoundException;
+import com.finance.manager.models.Budget;
 import com.finance.manager.models.Pot;
 import com.finance.manager.models.User;
 import com.finance.manager.models.requests.PotRequest;
 import com.finance.manager.models.responses.ApiDefaultResponse;
 import com.finance.manager.models.responses.PotResponse;
+import com.finance.manager.repositories.BudgetRepository;
 import com.finance.manager.services.PotService;
 import com.finance.manager.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,10 +31,12 @@ public class PotController {
 
     private final PotService potService;
     private final UserService userService;
+    private final BudgetRepository budgetRepository;
 
-    public PotController(PotService potService, UserService userService) {
+    public PotController(PotService potService, UserService userService, BudgetRepository budgetRepository) {
         this.potService = potService;
         this.userService = userService;
+        this.budgetRepository = budgetRepository;
     }
 
     @PostMapping
@@ -47,6 +51,14 @@ public class PotController {
         pot.setCurrentAmount(request.getCurrentAmount());
         pot.setUser(user);
 
+        if (request.getBudgetId() != null) {
+            Budget budget = budgetRepository.findById(request.getBudgetId())
+                    .orElseThrow(() -> new RuntimeException("Budget not found"));
+            pot.setBudget(budget);
+        } else {
+            pot.setBudget(null);
+        }
+
         Pot createdPot = potService.create(pot);
 
         PotResponse response = new PotResponse(
@@ -54,7 +66,8 @@ public class PotController {
                 createdPot.getName(),
                 createdPot.getGoalAmount(),
                 createdPot.getCurrentAmount(),
-                createdPot.getUser().getId()
+                createdPot.getUser().getId(),
+                createdPot.getBudget() != null ? createdPot.getBudget().getId() : null
         );
 
         return ResponseEntity
@@ -74,7 +87,8 @@ public class PotController {
                         pot.getName(),
                         pot.getGoalAmount(),
                         pot.getCurrentAmount(),
-                        pot.getUser().getId()
+                        pot.getUser().getId(),
+                        pot.getBudget() != null ? pot.getBudget().getId() : null
                 ))
                 .toList();
 
@@ -120,6 +134,14 @@ public class PotController {
         existingPot.setGoalAmount(potUpdate.getGoalAmount());
         existingPot.setCurrentAmount(potUpdate.getCurrentAmount());
 
+        if (potUpdate.getBudgetId() != null) {
+            Budget budget = budgetRepository.findById(potUpdate.getBudgetId())
+                    .orElseThrow(() -> new RuntimeException("Budget not found"));
+            existingPot.setBudget(budget);
+        } else {
+            existingPot.setBudget(null);
+        }
+
         Pot updatedPot = potService.update(id, existingPot);
 
         PotResponse response = new PotResponse(
@@ -127,7 +149,8 @@ public class PotController {
                 updatedPot.getName(),
                 updatedPot.getGoalAmount(),
                 updatedPot.getCurrentAmount(),
-                updatedPot.getUser().getId()
+                updatedPot.getUser().getId(),
+                updatedPot.getBudget() != null ? updatedPot.getBudget().getId() : null
         );
 
         return ResponseEntity
@@ -152,7 +175,8 @@ public class PotController {
                 pot.getName(),
                 pot.getGoalAmount(),
                 pot.getCurrentAmount(),
-                pot.getUser().getId()
+                pot.getUser().getId(),
+                pot.getBudget() != null ? pot.getBudget().getId() : null
         );
 
         return ResponseEntity.ok(ApiDefaultResponse.success(response, "Pot deleted successfully!"));

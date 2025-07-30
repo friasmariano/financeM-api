@@ -20,13 +20,16 @@ public class PotRequest {
     @DecimalMax(value = "99999999.99", message = "Current amount must not exceed 99,999,999.99")
     private BigDecimal currentAmount;
 
+    private Long budgetId;
+
     public PotRequest() {
     }
 
-    public PotRequest(String name, BigDecimal goalAmount, BigDecimal currentAmount) {
+    public PotRequest(String name, BigDecimal goalAmount, BigDecimal currentAmount, Long budgetId) {
         this.name = name;
         this.goalAmount = goalAmount;
         this.currentAmount = currentAmount;
+        this.budgetId = budgetId;
     }
 
     public String getName() {
@@ -52,4 +55,13 @@ public class PotRequest {
     public void setCurrentAmount(BigDecimal currentAmount) {
         this.currentAmount = currentAmount;
     }
+
+    public Long getBudgetId() {
+        return budgetId;
+    }
+
+    public void setBudgetId(Long budgetId) {
+        this.budgetId = budgetId;
+    }
+
 }

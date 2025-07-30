@@ -31,16 +31,22 @@ public class Pot {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+
+    @ManyToOne
+    @JoinColumn(name = "budget_id", nullable = true)
+    private Budget budget;
+
     public Pot() {
 
     }
 
-    public Pot(Long id, String name, BigDecimal goalAmount, BigDecimal currentAmount, User user) {
+    public Pot(Long id, String name, BigDecimal goalAmount, BigDecimal currentAmount, User user, Budget budget) {
         this.id = id;
         this.name = name;
         this.goalAmount = goalAmount;
         this.currentAmount = currentAmount;
         this.user = user;
+        this.budget = budget;
     }
 
     public Long getId() {
@@ -81,5 +87,13 @@ public class Pot {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public Budget getBudget() {
+        return budget;
+    }
+
+    public void setBudget(Budget budget) {
+        this.budget = budget;
     }
 }
