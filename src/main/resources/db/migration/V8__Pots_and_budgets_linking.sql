@@ -1,0 +1,5 @@
+ALTER TABLE persons
+    ALTER COLUMN email SET NOT NULL;
+
+ALTER TABLE pots
+    ALTER COLUMN user_id SET NOT NULL;

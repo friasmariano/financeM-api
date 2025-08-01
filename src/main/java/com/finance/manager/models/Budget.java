@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "budgets")
@@ -28,14 +30,18 @@ public class Budget {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @OneToMany(mappedBy = "budget", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Pot> pots = new ArrayList<>();
+
     public Budget() {}
 
-    public Budget(Long id, BudgetCategory category, BigDecimal limitAmount, User user, String name) {
+    public Budget(Long id, BudgetCategory category, BigDecimal limitAmount, User user, String name, List<Pot> pots) {
         this.id = id;
         this.category = category;
         this.limitAmount = limitAmount;
         this.user = user;
         this.name = name;
+        this.pots = pots;
     }
 
     public Long getId() {
@@ -76,5 +82,13 @@ public class Budget {
 
     public String getName() {
         return name;
+    }
+
+    public List<Pot> getPots() {
+        return pots;
+    }
+
+    public void setPots(List<Pot> pots) {
+        this.pots = pots;
     }
 }

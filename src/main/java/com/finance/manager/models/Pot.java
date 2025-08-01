@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "pots",
-        uniqueConstraints = @UniqueConstraint(name = "uc_pots_userid_name", columnNames = {"user_id", "name"}))
+       uniqueConstraints = @UniqueConstraint(name = "uc_pots_userid_name", columnNames = {"user_id", "name"}))
 
 public class Pot {
 
@@ -31,10 +31,10 @@ public class Pot {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-
-    @ManyToOne
+    @ManyToOne(optional = true)
     @JoinColumn(name = "budget_id", nullable = true)
     private Budget budget;
+
 
     public Pot() {
 
